@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Trekking Management Application{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-person-gear"></i> Account Profile</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{{ url_for('user_profile') }}" method="POST">
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-bold">Username (Read-only)</label>
+                        <input type="text" class="form-control bg-light" id="username" value="{{ user.username }}" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label fw-bold">Account Role</label>
+                        <input type="text" class="form-control bg-light" id="role" value="{{ user.role }}" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label fw-bold">Full Name *</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-bold">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label fw-bold">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="phone" value="{{ user.phone or '' }}">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-bold">New Password (Leave blank to keep unchanged)</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                            <i class="bi bi-check-lg"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

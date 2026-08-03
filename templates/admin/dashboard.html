@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Trekking Management Application{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+        <p class="text-muted small mb-0">Manage trek routes, staff approvals, user accounts, and system stats.</p>
+    </div>
+    <a href="{{ url_for('add_trek') }}" class="btn btn-primary fw-bold">
+        <i class="bi bi-plus-lg"></i> Add New Trek
+    </a>
+</div>
+
+<!-- Admin Statistics Overview -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted text-uppercase mb-1">Total Treks</h6>
+                    <h2 class="fw-bold text-primary mb-0">{{ total_treks }}</h2>
+                </div>
+                <div class="fs-1 text-primary"><i class="bi bi-compass"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card users p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted text-uppercase mb-1">Users & Staff</h6>
+                    <h2 class="fw-bold text-success mb-0">{{ total_users }}</h2>
+                </div>
+                <div class="fs-1 text-success"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card bookings p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-muted text-uppercase mb-1">Total Bookings</h6>
+                    <h2 class="fw-bold text-warning mb-0">{{ total_bookings }}</h2>
+                </div>
+                <div class="fs-1 text-warning"><i class="bi bi-journal-check"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Staff Approval Section -->
+{% if pending_staff %}
+    <div class="card border-warning mb-4 shadow-sm">
+        <div class="card-header bg-warning text-dark fw-bold">
+            <i class="bi bi-exclamation-triangle-fill"></i> Pending Trek Staff Approvals ({{ pending_staff|length }})
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for staff in pending_staff %}
+                        <tr>
+                            <td>#{{ staff.id }}</td>
+                            <td class="fw-bold">{{ staff.full_name }}</td>
+                            <td>{{ staff.username }}</td>
+                            <td>{{ staff.email }}</td>
+                            <td>{{ staff.phone or 'N/A' }}</td>
+                            <td>
+                                <form action="{{ url_for('toggle_user_status', user_id=staff.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn btn-sm btn-success fw-bold me-1">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('toggle_user_status', user_id=staff.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="action" value="blacklist">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle"></i> Reject/Blacklist
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Search Bar -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-2 align-items-center">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search Treks, Users, or Staff by Name or ID..." value="{{ search_query }}">
+                </div>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-secondary">Search</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs mb-3" id="adminTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active fw-bold" id="treks-tab" data-bs-toggle="tab" data-bs-target="#treks-pane">
+            <i class="bi bi-map"></i> All Trek Routes ({{ treks|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-bold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane">
+            <i class="bi bi-person-lines-fill"></i> Users & Staff ({{ users|length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link fw-bold" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings-pane">
+            <i class="bi bi-journal-text"></i> All Bookings ({{ all_bookings|length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="adminTabsContent">
+    <!-- Treks Tab -->
+    <div class="tab-pane fade show active" id="treks-pane">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Trek Name</th>
+                                <th>Location</th>
+                                <th>Difficulty</th>
+                                <th>Price</th>
+                                <th>Slots (Avail/Total)</th>
+                                <th>Assigned Staff</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trek in treks %}
+                                <tr>
+                                    <td>#{{ trek.id }}</td>
+                                    <td class="fw-bold">{{ trek.name }}</td>
+                                    <td>{{ trek.location }}</td>
+                                    <td>
+                                        <span class="badge {% if trek.difficulty == 'Easy' %}badge-easy{% elif trek.difficulty == 'Moderate' %}badge-moderate{% else %}badge-hard{% endif %}">
+                                            {{ trek.difficulty }}
+                                        </span>
+                                    </td>
+                                    <td>₹{{ "%.2f"|format(trek.price) }}</td>
+                                    <td>{{ trek.available_slots }} / {{ trek.total_slots }}</td>
+                                    <td>
+                                        {% if trek.assigned_staff %}
+                                            <span class="badge bg-info text-dark"><i class="bi bi-person-badge"></i> {{ trek.assigned_staff.full_name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Unassigned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if trek.status == 'Open' %}bg-success{% elif trek.status == 'Closed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ trek.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('edit_trek', trek_id=trek.id) }}" class="btn btn-sm btn-outline-primary me-1">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <form action="{{ url_for('delete_trek', trek_id=trek.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this trek?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted p-4">No treks found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users & Staff Tab -->
+    <div class="tab-pane fade" id="users-pane">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Account Controls</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                                <tr>
+                                    <td>#{{ u.id }}</td>
+                                    <td class="fw-bold">{{ u.full_name }}</td>
+                                    <td>{{ u.username }}</td>
+                                    <td>
+                                        <span class="badge {% if u.role == 'Staff' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {{ u.role }}
+                                        </span>
+                                    </td>
+                                    <td>{{ u.email }} | {{ u.phone or 'N/A' }}</td>
+                                    <td>
+                                        <span class="badge {% if u.status == 'Active' %}bg-success{% elif u.status == 'Pending' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                                            {{ u.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if u.status != 'Blacklisted' %}
+                                            <form action="{{ url_for('toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="blacklist">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-slash-circle"></i> Blacklist
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{{ url_for('toggle_user_status', user_id=u.id) }}" method="POST" class="d-inline">
+                                                <input type="hidden" name="action" value="activate">
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="bi bi-check-circle"></i> Activate
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted p-4">No users found.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Bookings Tab -->
+    <div class="tab-pane fade" id="bookings-pane">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Trekker Name</th>
+                                <th>Trek Name</th>
+                                <th>Booking Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in all_bookings %}
+                                <tr>
+                                    <td>#{{ b.id }}</td>
+                                    <td>{{ b.user.full_name }} ({{ b.user.username }})</td>
+                                    <td class="fw-bold">{{ b.trek.name }}</td>
+                                    <td>{{ b.booking_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge {% if b.status == 'Booked' %}bg-success{% elif b.status == 'Cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                            {{ b.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted p-4">No bookings recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

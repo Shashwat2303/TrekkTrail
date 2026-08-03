@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}My Bookings & History - Trekking Management Application{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-0"><i class="bi bi-journal-bookmark-fill"></i> My Trek Bookings & History</h2>
+        <p class="text-muted mb-0">Track your upcoming and completed trekking adventures.</p>
+    </div>
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary fw-bold">
+        <i class="bi bi-compass"></i> Explore More Treks
+    </a>
+</div>
+
+{% if bookings %}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Trek Name</th>
+                            <th>Location</th>
+                            <th>Difficulty</th>
+                            <th>Trek Dates</th>
+                            <th>Price</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td>#{{ b.id }}</td>
+                                <td class="fw-bold">{{ b.trek.name }}</td>
+                                <td>{{ b.trek.location }}</td>
+                                <td>
+                                    <span class="badge {% if b.trek.difficulty == 'Easy' %}badge-easy{% elif b.trek.difficulty == 'Moderate' %}badge-moderate{% else %}badge-hard{% endif %}">
+                                        {{ b.trek.difficulty }}
+                                    </span>
+                                </td>
+                                <td><small>{{ b.trek.start_date }} to {{ b.trek.end_date }}</small></td>
+                                <td class="fw-bold text-primary">₹{{ "%.2f"|format(b.trek.price) }}</td>
+                                <td><small>{{ b.booking_date.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                                <td>
+                                    <span class="badge {% if b.status == 'Booked' %}bg-success{% elif b.status == 'Cancelled' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ b.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if b.status == 'Booked' %}
+                                        <form action="{{ url_for('cancel_booking', booking_id=b.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this trek booking?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-circle"></i> Cancel
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-muted small">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info text-center p-4">
+        <h5>No bookings found in your account.</h5>
+        <p class="mb-3">You haven't booked any treks yet.</p>
+        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary fw-bold">Browse Available Treks</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard - Trekking Management Application{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-dark mb-0"><i class="bi bi-person-badge"></i> Staff Dashboard</h2>
+    <p class="text-muted">Welcome, {{ current_user.full_name }}. Here are your assigned trekking routes and participants.</p>
+</div>
+
+{% if treks %}
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for trek in treks %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-start border-4 border-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge {% if trek.status == 'Open' %}bg-success{% elif trek.status == 'Closed' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                {{ trek.status }}
+                            </span>
+                            <span class="badge {% if trek.difficulty == 'Easy' %}badge-easy{% elif trek.difficulty == 'Moderate' %}badge-moderate{% else %}badge-hard{% endif %}">
+                                {{ trek.difficulty }}
+                            </span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">{{ trek.name }}</h4>
+                        <p class="text-muted mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> {{ trek.location }}</p>
+
+                        <div class="bg-light p-3 rounded mb-3">
+                            <div class="row text-center">
+                                <div class="col-6 border-end">
+                                    <small class="text-muted d-block">Available Slots</small>
+                                    <span class="fs-5 fw-bold text-primary">{{ trek.available_slots }} / {{ trek.total_slots }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Registered Trekkers</small>
+                                    <span class="fs-5 fw-bold text-success">{{ trek.bookings|selectattr('status', 'equalto', 'Booked')|list|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-secondary"><i class="bi bi-calendar"></i> {{ trek.start_date }} to {{ trek.end_date }}</small>
+                            <a href="{{ url_for('manage_trek', trek_id=trek.id) }}" class="btn btn-primary fw-bold">
+                                <i class="bi bi-gear-fill"></i> Manage & View Participants
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-info p-4 text-center">
+        <h5>No Treks Assigned Yet</h5>
+        <p class="mb-0">You have not been assigned to any trekking routes by the Admin yet. Please check back later.</p>
+    </div>
+{% endif %}
+{% endblock %}
