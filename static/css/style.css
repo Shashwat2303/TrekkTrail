@@ -1,0 +1,65 @@
+/* Custom styles for Trekking Management Application */
+body {
+    background-color: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card {
+    border-left: 4px solid #0d6efd;
+}
+
+.stat-card.users {
+    border-left-color: #198754;
+}
+
+.stat-card.bookings {
+    border-left-color: #ffc107;
+}
+
+.badge-easy {
+    background-color: #198754;
+}
+
+.badge-moderate {
+    background-color: #fd7e14;
+}
+
+.badge-hard {
+    background-color: #dc3545;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+footer {
+    background-color: #212529;
+    color: #ced4da;
+    padding: 1.5rem 0;
+    margin-top: auto;
+}
